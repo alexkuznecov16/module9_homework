@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            text-align: center;
+        }input[type="number"]{
+            margin-top: 30px;
+            font-size: 16px;
+            width: 200px;
+        }
+        #result {
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+            min-height: 100vh;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            padding: 20px 0;
+        }
+
+        #result img{
+            width: 200px;
+            height: 150px;
+        }
+    </style>
+</head>
+<body>
+    <input id="numberInput" placeholder="Enter a number" type="number" min="1" max="10">
+    <button id="numberSubmit" type="submit">Submit</button>
+    <div id="result">
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
