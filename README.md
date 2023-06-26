@@ -5,7 +5,7 @@
 Вам дана заготовка и результат, который вы должны получить. Ваша задача — написать код, который будет преобразовывать JSON в JS-объект и выводить его в консоль.
 
 # Solution
-Я создал в __JS__ переменную, которая содержит __JSON__.
+Я создал в`JS__ переменную, которая содержит __JSON__.
 ```
 const jsonFile = `
 {
@@ -106,4 +106,108 @@ function request(){
 
 // Event on click to submit button
 document.getElementById('numberSubmit').addEventListener('click', request);
+```
+
+
+# Exercise 4
+# Условие
+Написать код приложения, интерфейс которого состоит из двух input и кнопки. В input можно ввести любое число.
+
+        Заголовок первого input — «номер страницы».
+        Заголовок второго input — «лимит».
+        Заголовок кнопки — «запрос».
+
+При клике на кнопку происходит следующее:
+
+        Если число в первом input не попадает в диапазон от 1 до 10 или не является числом — выводить ниже текст «Номер страницы вне диапазона от 1 до 10»;
+        Если число во втором input не попадает в диапазон от 1 до 10 или не является числом — выводить ниже текст «Лимит вне диапазона от 1 до 10»;
+        Если и первый, и второй input не в диапазонах или не являются числами — выводить ниже текст «Номер страницы и лимит вне диапазона от 1 до 10»;
+        Если числа попадают в диапазон от 1 до 10 — сделать запрос по URL https://picsum.photos/v2/list?page=1&limit=10, где GET-параметр page — это число из первого input, а GET-параметр limit — это введённое число второго input.
+
+Пример. Если пользователь ввёл 5 и 7, то запрос будет вида https://picsum.photos/v2/list?page=5&limit=7.
+
+После получения данных вывести список картинок на экран.
+
+Если пользователь перезагрузил страницу, то ему должны показываться картинки из последнего успешно выполненного запроса (использовать localStorage).
+
+# Solution
+# Variables
+Создал 2 основные переменные для работы с приложением.
+```
+const btn = document.getElementById('btn');
+const resultBlock = document.querySelector('.result');
+```
+
+# Button on click event
+При нажатии на кнопку будет асинхронная работа с __event__. Получаем данные из __input__ и переводим их в числа из строк. Далее проверяем оба числа на корректность, если оба числа в диапазоне от 1 до 10 то в блоке `resultBlock` (в котором буду выводиться картинки) создаётся пустая строка для перезагрузки картинок и вызываем функцию `makeRequest()`, которая будет делать запрос. Если числа вне диапазона то будут выдаваться определенные ошибки в блоке.
+```
+btn.addEventListener('click', async() => {
+    // variables area
+    pageInput = document.getElementById('input-page').value;
+    limitInput = document.getElementById('input-limit').value;
+    pageValue = parseInt(pageInput);
+    limitValue = parseInt(limitInput);
+
+    // numbers check
+    if (pageValue >= 1 && pageValue <= 10 && limitValue >= 1 && limitValue <= 10){
+        resultBlock.innerHTML = ''; // after new request we will remove all images and get new
+        const result = await makeRequest(); // make request
+        console.log(result);
+    } else if (pageValue < 1 || pageValue > 10) {
+        resultBlock.innerHTML = `<p>Номер страницы вне диапазона от 1 до 10</p>`
+        console.log('Выполнен запрос!')
+    } else if (limitValue < 1 || limitValue > 10) {
+        resultBlock.innerHTML = `<p>Лимит вне диапазона от 1 до 10</p>`
+        console.log('Выполнен запрос!')
+    } else{
+        resultBlock.innerHTML = `<p>Номер страницы и лимит вне диапазона от 1 до 10</p>`
+        console.log('Выполнен запрос!')
+    }
+})
+```
+
+
+# fetch request
+В этой функции я использовал другую ссылку на картинки потому что она не работала, в итоге мне ментор прислал другую ссылку.
+При получении обоих цифр мы создаём пустой массив __images__, далее с помощью цикла `for` мы получаем, а потом добавляем каждую ссылку картинки в массив __images__ и выводим их всех добавляя в блок `resultBlock`. После добавления картинок по тз мы вызвали функцию, которая принимает все картинки выбранные пользователем, ниже покажу как я их сохранил.
+```
+const makeRequest = () => {
+    return fetch(`https://picsum.photos/v2/list?page=${pageValue}&limit=${limitValue}`)
+        .then((response) => {
+            console.log(`Response: ${response}`)
+            return response.json();
+        })
+        .then((data) => {
+            const images = [];
+            for (let i = 0; i < limitValue; i++) {
+                const imageUrl = data[i].download_url; // get url for images
+                images.push(imageUrl); // append new images
+                resultBlock.innerHTML += `<img width="200px" height="200px" src="${imageUrl}" alt="image">`;
+            }
+            saveImagesToLocalStorage(images);
+        })
+        .catch((error) => {
+            console.log(`error: ${error}`);
+        })
+}
+```
+
+# images saving
+После добавления картинок в массив мы вызываем функцию `saveImagesToLocalStorage`, которая принимает все картинки. Внутри неё мы с помощью __localStorage__ добавляем ссылки картинок и преобразуем их в строки. Выше написан __event__, который после перезагрузки создаёт переменную __savedImages__, которая парсит JSON-строку и получает ссылки на все картинки. Далее если массив имеет хотя-бы 1 ссылку на картинку то перебираем массив и добавляем картинки на сайт.
+```
+// on refresh of page close event
+document.addEventListener('DOMContentLoaded', () => {
+    const savedImages = JSON.parse(localStorage.getItem('images')); // get saved images
+    if (savedImages.length > 0 && savedImages.length > 0) {
+        // iterate every images url
+        for (const download_url of savedImages) {
+            resultBlock.innerHTML += `<img width="200px" height="200px" src="${download_url}" alt="image">`;
+        }
+    }
+});
+
+
+function saveImagesToLocalStorage(images){
+    localStorage.setItem('images', JSON.stringify(images)); // append items for saving
+}
 ```
